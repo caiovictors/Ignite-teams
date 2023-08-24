@@ -8,8 +8,8 @@
         "endOfLine": "auto",
         "printWidth": 80,
         "tabWidth": 2,
-        "singleQuote": true,
-        "trailingComma": "all",
+        "singleQuote": false,
+        "trailingComma": "auto",
         "arrowParens": "always",
         "semi": false
       }
@@ -19,12 +19,8 @@
     "jsx-a11y/alt-text": [
       "warn",
       {
-        "elements": [
-          "img"
-        ],
-        "img": [
-          "Image"
-        ]
+        "elements": ["img"],
+        "img": ["Image"]
       }
     ],
     "jsx-a11y/aria-props": "warn",
