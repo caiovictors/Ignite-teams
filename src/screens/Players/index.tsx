@@ -1,8 +1,22 @@
 import { useState, useEffect, useRef } from "react";
-import { Alert, FlatList, TextInput } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Keyboard,
+  TouchableWithoutFeedback,
+  TextInput,
+  View,
+} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-import { Container, Form, HeaderList, NumberOfPlayers } from "./styles";
+import {
+  Container,
+  Form,
+  HeaderList,
+  Text,
+  ScoreContainer,
+  Title,
+} from "./styles";
 
 import { Header } from "@components/Header";
 import { Highlight } from "@components/Highlight";
@@ -12,14 +26,21 @@ import { Filter } from "@components/Filter";
 import { PlayerCard } from "@components/PlayerCard";
 import { ListEmpty } from "@components/ListEmpty";
 import { Button } from "@components/Button";
+import { Loading } from "@components/Loading";
+
 import { AppError } from "@utils/AppError";
+
 import { playerAddByGroup } from "@storage/player/playerAddByGroup";
-import { playersGetByGroup } from "@storage/player/playersGetByGroup";
 import { playersGetByGroupAndTeam } from "@storage/player/playerGetByGroupAndTeam";
-import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
+import { PlayerStorageDTO } from "@storage/player/playerStorageDTO";
 import { playerRemoveByGroup } from "@storage/player/playerRemoveByGroup";
 import { groupRemoveByName } from "@storage/group/groupRemoveByName";
-import { Loading } from "@components/Loading";
+import { X } from "phosphor-react-native";
+import { useTheme } from "styled-components/native";
+import { groupGetInfo } from "@storage/group/groupGetInfo";
+import { DEFAULT_SCORE } from "@storage/group/groupStorageDTO";
+import { groupScoreSaveByGroupName } from "@storage/group/groupScoreSaveByGroupName";
+import { removeLeadingZeroes } from "@utils/Functions";
 
 type RouteParams = {
   group: string;
@@ -30,9 +51,17 @@ export function Players() {
   const { group } = route.params as RouteParams;
   const navigation = useNavigation();
 
+  const theme = useTheme();
+
+  const scoreInputStyle = {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.COLORS.GREEN_500,
+  };
+
   const [isLoading, setIsLoading] = useState(true);
   const [team, setTeam] = useState("Time A");
   const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
+  const [score, setScore] = useState(DEFAULT_SCORE);
   const [newPlayerName, setNewPlayerName] = useState("");
 
   const newPlayerNameInputRef = useRef<TextInput>(null);
@@ -63,6 +92,23 @@ export function Players() {
     }
   }
 
+  async function fetchScoreByTeam() {
+    try {
+      setIsLoading(true);
+
+      const scoreByTeam = await groupGetInfo(group);
+      setScore(scoreByTeam.score);
+    } catch (error) {
+      console.log(error);
+      Alert.alert(
+        "Pessoas",
+        "Não foi possível carregar as informações do placar"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function fetchPlayersByTeam() {
     try {
       setIsLoading(true);
@@ -71,12 +117,43 @@ export function Players() {
       setPlayers(playersByTeam);
     } catch (error) {
       console.log(error);
-      Alert.alert(
-        "Pessoas",
-        "Não foi possível carregar os integrantes do time"
-      );
+      Alert.alert("Turmas", "Não foi possível carregar os integrantes do time");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  function handleSetScore(value: string, position: number) {
+    const newScore = [...score];
+    newScore[position] = value;
+    setScore(newScore);
+  }
+
+  function handleFormatScores() {
+    const scores = [...score];
+
+    scores.map((score, index) => {
+      scores[index] = removeLeadingZeroes(score);
+    });
+
+    if (!scores[0].trim()) scores[0] = "0";
+    if (!scores[1].trim()) scores[1] = "0";
+
+    return scores;
+  }
+
+  async function handleSaveScore() {
+    try {
+      setIsLoading(true);
+      const scores = handleFormatScores();
+
+      await groupScoreSaveByGroupName(group, scores);
+
+      setScore(scores);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Alterar placar", "Não foi possível atualizar o placar");
     }
   }
 
@@ -111,67 +188,103 @@ export function Players() {
     fetchPlayersByTeam();
   }, [team]);
 
+  useEffect(() => {
+    fetchScoreByTeam();
+  }, []);
+
   return (
-    <Container>
-      <Header showBackButton />
-      <Highlight title={group} subtitle="Adicione a galera e separe os times" />
-      <Form>
-        <Input
-          inputRef={newPlayerNameInputRef}
-          autoCorrect={false}
-          value={newPlayerName}
-          placeholder="Nome da pessoa"
-          onChangeText={setNewPlayerName}
-          onSubmitEditing={handleAddPlayer}
-          returnKeyType="done"
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <Container>
+        <Header showBackButton />
+        <Highlight
+          title={group}
+          subtitle="Adicione a galera e separe os times"
         />
-        <ButtonIcon icon="add" onPress={handleAddPlayer} disabled={isLoading} />
-      </Form>
 
-      <HeaderList>
-        <FlatList
-          data={["Time A", "Time B"]}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <Filter
-              title={item}
-              isActive={item === team}
-              onPress={() => setTeam(item)}
+        <Form>
+          <Input
+            inputRef={newPlayerNameInputRef}
+            autoCorrect={false}
+            value={newPlayerName}
+            placeholder="Nome da pessoa"
+            onChangeText={setNewPlayerName}
+            onSubmitEditing={handleAddPlayer}
+            returnKeyType="done"
+          />
+          <ButtonIcon
+            icon="add"
+            onPress={handleAddPlayer}
+            disabled={isLoading}
+          />
+        </Form>
+
+        <HeaderList>
+          <FlatList
+            data={["Time A", "Time B"]}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <Filter
+                title={item}
+                isActive={item === team}
+                onPress={() => setTeam(item)}
+              />
+            )}
+            horizontal
+          />
+
+          <Text>{players.length}</Text>
+        </HeaderList>
+
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <View onStartShouldSetResponder={() => true} style={{ flex: 1 }}>
+            <FlatList
+              data={players}
+              keyExtractor={(item) => item.name}
+              renderItem={({ item }) => (
+                <PlayerCard
+                  name={item.name}
+                  onRemove={() => handleRemovePlayer(item.name)}
+                />
+              )}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={[!players.length && { flex: 1 }]}
+              ListEmptyComponent={() => (
+                <ListEmpty message="Ainda não há pessoas nesse time." />
+              )}
             />
-          )}
-          horizontal
+          </View>
+        )}
+        <Title>Placar</Title>
+        <ScoreContainer>
+          <Text>TIME A</Text>
+          <Input
+            value={score[0]}
+            inputMode="numeric"
+            onChangeText={(text) => handleSetScore(text, 0)}
+            textAlign="center"
+            onBlur={handleSaveScore}
+            style={scoreInputStyle}
+          />
+          <X size={24} color={theme.COLORS.GREEN_500} />
+          <Input
+            value={score[1]}
+            inputMode="numeric"
+            onChangeText={(text) => handleSetScore(text, 1)}
+            textAlign="center"
+            onBlur={handleSaveScore}
+            style={scoreInputStyle}
+          />
+          <Text>TIME B</Text>
+        </ScoreContainer>
+        <Button
+          title="Remover turma"
+          type="SECONDARY"
+          style={{ marginTop: 16 }}
+          onPress={handleRemoveGroup}
         />
-
-        <NumberOfPlayers>{players.length}</NumberOfPlayers>
-      </HeaderList>
-
-      {isLoading ? (
-        <Loading />
-      ) : (
-        <FlatList
-          data={players}
-          keyExtractor={(item) => item.name}
-          renderItem={({ item }) => (
-            <PlayerCard
-              name={item.name}
-              onRemove={() => handleRemovePlayer(item.name)}
-            />
-          )}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            { paddingBottom: 100 },
-            !players.length && { flex: 1 },
-          ]}
-          ListEmptyComponent={() => (
-            <ListEmpty message="Ainda não há pessoas nesse time." />
-          )}
-        />
-      )}
-      <Button
-        title="Remover turma"
-        type="SECONDARY"
-        onPress={handleRemoveGroup}
-      />
-    </Container>
+      </Container>
+    </TouchableWithoutFeedback>
   );
 }

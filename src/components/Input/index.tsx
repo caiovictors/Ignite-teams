@@ -9,10 +9,16 @@ type Props = TextInputProps & {
 
 export function Input({ inputRef, ...rest }: Props) {
   const { COLORS } = useTheme();
+
+  function handleBlur() {
+    inputRef?.current?.blur();
+  }
+
   return (
     <Container
       ref={inputRef}
       placeholderTextColor={COLORS.GRAY_300}
+      onBlur={handleBlur}
       {...rest}
     />
   );
