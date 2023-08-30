@@ -7,7 +7,7 @@
 
 # 💡 About
 
-**React Native team organizer App. Made on Rocketseat's React Native Ignite.**
+React Native team organizer App. You can create a group, separate in team A and team B and add/remove teams players. Made on Rocketseat's React Native Ignite to learn Styled Components and AsyncStorage.
 
 # 📐 Layout
 
@@ -37,7 +37,9 @@ $ npx expo start
 
 # 📲 Functionalities
 
-  * **You can create and remove a team, add/remove players and keep scores**
+  * **You can create/remove a group**
+  * **Add/remove players between team A and B**
+  * **Track scores (Extra feature)**
 
 ![cover_ignite_teams](https://github.com/caiovictors/ignite-teams/assets/12973109/0be4083d-4670-4953-9a06-d3ff71b4c89a)
 
