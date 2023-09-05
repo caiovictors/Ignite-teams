@@ -41,12 +41,18 @@ $ npx expo start
   * **Add/remove players between team A and B**
   * **Track scores (Extra feature)**
 
-![cover_ignite_teams](https://github.com/caiovictors/ignite-teams/assets/12973109/0be4083d-4670-4953-9a06-d3ff71b4c89a)
+# 🖼️ Screenshots
+<br />
 
+&nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp;  &nbsp; **➕ Create team**           &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp;  &nbsp;  &nbsp;              **📝 List teams**                  &nbsp;  &nbsp;  &nbsp;  &nbsp;    **📝 Team players ans scores**  
 
-         **➕ Create**                
-         **✔ Check**             
-         **❌ Remove**
+<p align="center">
+ 
+<img src="https://github.com/caiovictors/ignite-teams/assets/12973109/3c32c7c9-6e09-4e4c-b957-7b912a5da192" alt="create-team" width="230"/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+<img src="https://github.com/caiovictors/ignite-teams/assets/12973109/2eacd7c5-eb37-4b46-8812-5542419651b3)" alt="list-teams" width="230"/>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+<img src="https://github.com/caiovictors/ignite-teams/assets/12973109/d30dd4c8-1c99-43a7-b7a6-4996321ec4fd" alt="team-players" width="230"/>
+
+</p>
 
 
  # 💻 Technologies
